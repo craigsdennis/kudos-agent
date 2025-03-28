@@ -15,5 +15,10 @@
 		"typescript": "^5.5.2",
 		"vitest": "~3.0.7",
 		"wrangler": "^4.6.0"
+	},
+	"dependencies": {
+		"agents": "^0.0.46",
+		"hono": "^4.7.5",
+		"hono-agents": "^0.0.36"
 	}
 }
