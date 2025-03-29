@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+@layer components {
+  .whiteboard {
+    @apply bg-whiteboard min-h-screen p-8;
+  }
+
+  .sticky-note {
+    @apply bg-sticky-yellow p-4 rounded-sm shadow-sticky transform rotate-1 mb-4;
+    @apply transition-all hover:rotate-0 hover:-translate-y-1;
+  }
+
+  .sticky-note-blue {
+    @apply bg-sticky-blue rotate-[-1deg];
+  }
+
+  .sticky-note-green {
+    @apply bg-sticky-green rotate-[1deg];
+  }
+
+  .sticky-note-pink {
+    @apply bg-sticky-pink rotate-[-2deg];
+  }
+
+  .whiteboard-input {
+    @apply border-2 border-gray-300 rounded-md p-2 w-full;
+  }
+
+  .marker-button {
+    @apply bg-black text-white font-bold py-2 px-4 rounded-md hover:bg-gray-800;
+  }
+}

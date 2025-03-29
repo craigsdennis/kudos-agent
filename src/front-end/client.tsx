@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import Home from "./pages/home";
 import User from "./pages/user";
+import "./styles.css";
 
 const url = new URL(window.location.href);
 const root = createRoot(document.getElementById("app")!);
