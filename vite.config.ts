@@ -6,4 +6,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [cloudflare(), react(), tailwindcss()],
+	esbuild: {
+		target: "es2022"
+	}
 });
