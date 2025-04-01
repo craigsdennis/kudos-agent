@@ -21,8 +21,8 @@ export default function User({username}: {username: string}) {
 		await agent.call("addKudo", [text, author, ""]);
 	}
 	
-	const getRandomStickyClass = () => {
-		return STICKY_COLORS[Math.floor(Math.random() * STICKY_COLORS.length)];
+	const heartKudo = async (id: number) => {
+		await agent.call("heartKudo", [id]);
 	}
 	
 	return (
@@ -35,9 +35,17 @@ export default function User({username}: {username: string}) {
 				
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 					{kudos.map((kudo, index) => (
-						<div key={index} className={`${getRandomStickyClass()}`}>
+						<div key={index} className="sticky-note">
 							<p className="text-lg font-medium mb-2">{kudo.text}</p>
-							<p className="text-sm text-gray-600">From: {kudo.author}</p>
+							<div className="flex justify-between items-center">
+								<p className="text-sm text-gray-600">From: {kudo.author}</p>
+								<button 
+									onClick={() => heartKudo(kudo.id)}
+									className="flex items-center text-sm text-gray-600 hover:text-red-500"
+								>
+									<span className="mr-1">❤️</span> {kudo.hearted}
+								</button>
+							</div>
 						</div>
 					))}
 				</div>
