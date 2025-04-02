@@ -58,6 +58,38 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			});
 		}
 	}
+
+	async generateCompliment() {
+		const rows = this.sql`SELECT text FROM kudos ORDER BY RANDOM() LIMIT 3`;
+		const kudoTexts = rows.map(row => row.text);
+		const instructions = `You are a compliment creator.
+			The user is going to provide you with a list of previous kudos.
+			Your job is to summarize the kudos and generate a relevant compliment that encompasses the traits that the kudos highlight.
+			The compliment will be delivered to the person who received the kudos, so you should use statements like "You are...".
+			Keep it succinct, yet poignant.
+			Return only the compliment, no prefix or description.`;
+		const { response } = await this.env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+			messages: [
+				{role: "system", content: instructions},
+				{role: "user", content: "-" + kudoTexts.join("\n\n\n\n-")}
+			]
+		});
+		return response;
+	}
+
+	async getSpeech(text: string) {
+		const results = await this.env.AI.run("@cf/myshell-ai/melotts", {
+			prompt: text
+		});
+		return results.audio;
+	}
+
+	@callable()
+	async getSpokenCompliment() {
+		const compliment = await this.generateCompliment();
+		console.log({compliment});
+		return this.getSpeech(compliment);
+	}
 }
 
 

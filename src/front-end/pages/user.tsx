@@ -1,11 +1,14 @@
 import { useAgent } from "agents/react";
 import type { Kudo, KudosState } from "../../agents/kudos";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 const STICKY_COLORS = ['sticky-note', 'sticky-note-blue', 'sticky-note-green', 'sticky-note-pink'];
 
 export default function User({username}: {username: string}) {
 	const [kudos, setKudos] = useState<Kudo[]>([]);
+	const [isPlaying, setIsPlaying] = useState(false);
+	const audioRef = useRef<HTMLAudioElement | null>(null);
+	
 	const agent = useAgent({
 		agent: "kudos-agent",
 		name: username,
@@ -25,12 +28,42 @@ export default function User({username}: {username: string}) {
 		await agent.call("heartKudo", [id]);
 	}
 	
+	const playCompliment = async () => {
+		try {
+			setIsPlaying(true);
+			const audioData = await agent.call("getSpokenCompliment", []);
+			if (audioData) {
+				const audio = new Audio(`data:audio/mp3;base64,${audioData}`);
+				audioRef.current = audio;
+				
+				audio.onended = () => {
+					setIsPlaying(false);
+				};
+				
+				await audio.play();
+			}
+		} catch (error) {
+			console.error("Error playing compliment:", error);
+			setIsPlaying(false);
+		}
+	}
+	
 	return (
 		<div className="whiteboard p-6 min-h-screen">
 			<div className="max-w-4xl mx-auto">
 				<div className="flex justify-between items-center mb-8">
 					<h1 className="text-4xl font-bold">{username}'s Kudos Board</h1>
-					<a href="/" className="marker-button">Back to Home</a>
+					<div className="flex gap-4">
+						<button
+							onClick={playCompliment}
+							disabled={isPlaying}
+							className="marker-button flex items-center"
+						>
+							<span className="mr-2">{isPlaying ? '🔊' : '🔈'}</span>
+							{isPlaying ? 'Playing...' : 'Give me a compliment'}
+						</button>
+						<a href="/" className="marker-button">Back to Home</a>
+					</div>
 				</div>
 				
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
