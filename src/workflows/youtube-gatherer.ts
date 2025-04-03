@@ -1,6 +1,6 @@
-import { google } from 'googleapis';
+import { env } from 'cloudflare:workers';
 import { getAgentByName } from 'agents';
-import { WorkflowEntrypoint, WorkflowStep, type WorkflowEvent } from 'cloudflare:workers';
+import { WorkflowEntrypoint, type WorkflowStep, type WorkflowEvent } from 'cloudflare:workers';
 
 type Params = {
 	youtubeVideoId: string;
@@ -8,43 +8,70 @@ type Params = {
 	agentName: string;
 };
 
+async function fetchCommentsSince(
+	videoId: string,
+	sinceTime: Date,
+	pageToken: string | null = null,
+	collected: any[] = []
+  ): Promise<any[]> {
+	const url = new URL('https://www.googleapis.com/youtube/v3/commentThreads');
+	url.searchParams.set('part', 'snippet');
+	url.searchParams.set('videoId', videoId);
+	url.searchParams.set('maxResults', '100');
+	url.searchParams.set('order', 'time'); // newest first
+	url.searchParams.set('textFormat', 'plainText');
+	url.searchParams.set('key', env.YOUTUBE_API_KEY);
+	if (pageToken) url.searchParams.set('pageToken', pageToken);
+	console.log({url: url.toString()});
+	const res = await fetch(url.toString());
+	if (!res.ok) {
+	  console.error(`Error fetching comments: ${res.statusText}`);
+	  return collected;
+	}
+
+	const data = await res.json();
+	const filtered = (data.items || []).filter((item: any) => {
+	  const published = new Date(item.snippet.topLevelComment.snippet.publishedAt);
+	  return published >= sinceTime;
+	});
+
+	collected.push(...filtered);
+
+	if (data.nextPageToken) {
+	  return fetchCommentsSince(videoId, sinceTime, data.nextPageToken, collected);
+	}
+
+	return collected;
+  }
+
+  async function getVideoTitle(videoId: string): Promise<string | null> {
+	const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${env.YOUTUBE_API_KEY}`;
+
+	const res = await fetch(url);
+	if (!res.ok) {
+	  console.error(`Failed to fetch video info: ${res.statusText}`);
+	  return null;
+	}
+
+	const data = await res.json();
+
+	if (data.items && data.items.length > 0) {
+	  return data.items[0].snippet.title;
+	}
+
+	return null;
+  }
+
+
 export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 
 	async run(event: Readonly<WorkflowEvent<Params>>, step: WorkflowStep) {
 		const agent = await getAgentByName(this.env.KudosAgent, event.payload.agentName);
-		const youtube = google.youtube({
-			version: 'v3',
-			auth: this.env.YOUTUBE_API_KEY,
-		});
+		const ytTitle = await getVideoTitle(event.payload.youtubeVideoId);
 		const commentThreads = await step.do(`Gather YouTube Comments since ${event.payload.since}`, async () => {
-			// Do some recursion for paging
-			async function fetchComments(videoId: string, since: Date, pageToken?: string, collected: any[] = []): Promise<any[]> {
-				const response = await youtube.commentThreads.list({
-					part: ['snippet'],
-					videoId,
-					maxResults: 100,
-					pageToken,
-					order: 'time', // get newest first
-					textFormat: 'plainText',
-				});
-
-				const newComments = (response.data.items || []).filter((item) => {
-					const publishedAt = new Date(item.snippet?.topLevelComment?.snippet?.publishedAt || '');
-					return publishedAt >= since;
-				});
-
-				collected.push(...newComments);
-
-				// Check for next page
-				if (response.data.nextPageToken) {
-					return fetchComments(videoId, since, response.data.nextPageToken, collected);
-				}
-
-				return collected;
-			}
 
 			const sinceDate = new Date(event.payload.since);
-			return await fetchComments(event.payload.youtubeVideoId, sinceDate);
+			return await fetchCommentsSince(event.payload.youtubeVideoId, sinceDate);
 		});
 		for (const commentThread of commentThreads) {
 			// Just get top level comments?
@@ -82,15 +109,15 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 							},
 						},
 					});
-					console.log({ comment: topLevelComment.snippet.textDisplay, isCompliment, compliment });
+					console.log({ comment: topLevelComment.snippet.textDisplay, response });
 					// Seems like it is parsed
 					return response;
 				});
 				if (isCompliment) {
 					// Add the Kudo to the agent
 					const kudo = await step.do(`Add the compliment "${compliment}"`, async () => {
-						const kudoText = `${topLevelComment.snippet.authorDisplayName} said ${topLevelComment.snippet.textDisplay}, so basically "${compliment}"`;
-						return await agent.addKudo(kudoText, 'youtube-comment', `https://youtu.be/${event.payload.youtubeVideoId}`);
+						const kudoText = `${} said ${topLevelComment.snippet.textDisplay}, so basically "${compliment}"`;
+						return await agent.addKudo(kudoText, topLevelComment.snippet.authorDisplayName, `https://youtu.be/${event.payload.youtubeVideoId}`, ytTitle || "YouTube Vid");
 					});
 				}
 			}

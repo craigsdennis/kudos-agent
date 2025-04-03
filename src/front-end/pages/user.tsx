@@ -21,7 +21,9 @@ export default function User({username}: {username: string}) {
 		const text = form.get("kudo");
 		// Store in cookie?
 		const author = form.get("author");
-		await agent.call("addKudo", [text, author, ""]);
+		const url = form.get("url") || "";
+		const urlTitle = form.get("urlTitle") || "";
+		await agent.call("addKudo", [text, author, url, urlTitle]);
 	}
 	
 	const heartKudo = async (id: number) => {
@@ -70,6 +72,16 @@ export default function User({username}: {username: string}) {
 					{kudos.map((kudo, index) => (
 						<div key={index} className="sticky-note">
 							<p className="text-lg font-medium mb-2">{kudo.text}</p>
+							{kudo.url && kudo.urlTitle && (
+								<a 
+									href={kudo.url} 
+									target="_blank" 
+									rel="noopener noreferrer"
+									className="block mb-2 text-blue-500 hover:underline"
+								>
+									{kudo.urlTitle}
+								</a>
+							)}
 							<div className="flex justify-between items-center">
 								<p className="text-sm text-gray-600">From: {kudo.author}</p>
 								<button 
@@ -107,6 +119,28 @@ export default function User({username}: {username: string}) {
 								className="whiteboard-input"
 								required
 								placeholder="Your name" 
+							/>
+						</div>
+						<div className="space-y-2">
+							<label className="block font-medium">
+								Link URL (optional)
+							</label>
+							<input 
+								type="url" 
+								name="url" 
+								className="whiteboard-input"
+								placeholder="https://example.com" 
+							/>
+						</div>
+						<div className="space-y-2">
+							<label className="block font-medium">
+								Link Title (optional)
+							</label>
+							<input 
+								type="text" 
+								name="urlTitle" 
+								className="whiteboard-input"
+								placeholder="Visit this site" 
 							/>
 						</div>
 						<button type="submit" className="marker-button w-full">

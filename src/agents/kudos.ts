@@ -5,7 +5,8 @@ export type Kudo = {
 	text: string,
 	author: string,
 	hearted: number,
-	url?: string
+	url?: string,
+	urlTitle?: string
 }
 
 export type KudosState = {
@@ -25,6 +26,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
             text TEXT NOT NULL,
             author TEXT,
 			url TEXT,
+			url_title TEXT,
 			hearted INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
 		this.sql`CREATE TABLE IF NOT EXISTS youtube_videos (
@@ -34,10 +36,10 @@ export class KudosAgent extends Agent<Env, KudosState> {
 	}
 
 	@callable()
-	async addKudo(text: string, author: string, url: string) {
-		const rows = this.sql`INSERT INTO kudos (text, author, url) VALUES (${text}, ${author}, ${url}) RETURNING id;`
+	async addKudo(text: string, author: string, url: string, urlTitle: string) {
+		const rows = this.sql`INSERT INTO kudos (text, author, url, url_title) VALUES (${text}, ${author}, ${url}, ${urlTitle}) RETURNING id;`
 		const id = rows[0].id as number;
-		const kudo: Kudo = {id, text, author, url, hearted: 0};
+		const kudo: Kudo = {id, text, author, url, urlTitle, hearted: 0};
 		const latest = this.state.latest;
 		// Prepend
 		latest.unshift(kudo);
@@ -111,7 +113,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
 	}
 
 	async trackYouTubeChecked(youtubeVideoId: string) {
-		this.sql`UPDATE youtube_videos SET last_checked_date=NOW() WHERE id=${youtubeVideoId}`;
+		this.sql`UPDATE youtube_videos SET last_checked_date=CURRENT_TIMESTAMP WHERE id=${youtubeVideoId}`;
 	}
 
 	async getSpeech(text: string) {

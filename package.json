@@ -22,12 +22,12 @@
 	},
 	"dependencies": {
 		"@cloudflare/vite-plugin": "^0.1.20",
+		"@googleapis/youtube": "^24.0.0",
 		"@tailwindcss/postcss": "^4.0.17",
 		"@tailwindcss/vite": "^4.0.17",
 		"@vitejs/plugin-react": "^4.3.4",
 		"agents": "^0.0.46",
 		"autoprefixer": "^10.4.21",
-		"googleapis": "^148.0.0",
 		"hono": "^4.7.5",
 		"hono-agents": "^0.0.36",
 		"postcss": "^8.5.3",
