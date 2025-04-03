@@ -9,12 +9,14 @@ export type Kudo = {
 }
 
 export type KudosState = {
-	latest: Kudo[]
+	latest: Kudo[],
+	youtubeVideoWatchCount: number;
 }
 
 export class KudosAgent extends Agent<Env, KudosState> {
 	initialState:KudosState = {
-		latest: []
+		latest: [],
+		youtubeVideoWatchCount: 0
 	}
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
@@ -25,6 +27,10 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			url TEXT,
 			hearted INTEGER DEFAULT 0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
+		this.sql`CREATE TABLE IF NOT EXISTS youtube_videos (
+			id STRING PRIMARY KEY,
+			last_checked_date TIMESTAMP,
+			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
 	}
 
 	@callable()
@@ -75,6 +81,37 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			]
 		});
 		return response;
+	}
+
+	@callable()
+	async addYouTubeVideo(url: string) {
+		const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+		const match = url.match(regex);
+		const videoId = match ? match[1] : null;
+		if (!videoId) {
+			throw new Error(`Unknown YouTube URL format: ${url}`);
+		}
+		return this.addYouTubeById(videoId);
+	}
+
+	async addYouTubeById(videoId: string) {
+		this.sql`INSERT INTO youtube_videos (id) VALUES (${videoId});`;
+		const rows = this.sql`SELECT count(*) as watchCount FROM youtube_videos;`
+		await this.env.YOUTUBE_GATHERER.create({
+			params: {
+				youtubeVideoId: videoId,
+				since: new Date("2020-01-01"),
+				agentName: this.name
+			}
+		})
+		this.setState({
+			...this.state,
+			youtubeVideoWatchCount: rows[0].watchCount as number
+		})
+	}
+
+	async trackYouTubeChecked(youtubeVideoId: string) {
+		this.sql`UPDATE youtube_videos SET last_checked_date=NOW() WHERE id=${youtubeVideoId}`;
 	}
 
 	async getSpeech(text: string) {

@@ -12,7 +12,7 @@
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.7.5",
-		"@cloudflare/workers-types": "^4.20250327.0",
+		"@cloudflare/workers-types": "^4.20250403.0",
 		"@types/react": "^19.0.12",
 		"@types/react-dom": "^19.0.4",
 		"typescript": "^5.5.2",
@@ -21,12 +21,13 @@
 		"wrangler": "^4.7.0"
 	},
 	"dependencies": {
-		"@cloudflare/vite-plugin": "^0.1.19",
+		"@cloudflare/vite-plugin": "^0.1.20",
 		"@tailwindcss/postcss": "^4.0.17",
 		"@tailwindcss/vite": "^4.0.17",
 		"@vitejs/plugin-react": "^4.3.4",
 		"agents": "^0.0.46",
 		"autoprefixer": "^10.4.21",
+		"googleapis": "^148.0.0",
 		"hono": "^4.7.5",
 		"hono-agents": "^0.0.36",
 		"postcss": "^8.5.3",

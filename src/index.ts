@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
-import { KudosAgent } from './agents/kudos';
 import { agentsMiddleware } from 'hono-agents';
+import { KudosAgent } from './agents/kudos';
+import { YouTubeGatherer } from './workflows/youtube-gatherer';
 
-export { KudosAgent };
+export { KudosAgent, YouTubeGatherer };
 
 const app = new Hono<{ Bindings: Env }>();
 app.use('*', agentsMiddleware());
