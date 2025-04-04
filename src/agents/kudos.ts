@@ -33,6 +33,8 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			id STRING PRIMARY KEY,
 			last_checked_date TIMESTAMP,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
+		// Hourly check for YouTube comments
+		this.schedule("0 * * * *", "checkForYouTubeComments");
 	}
 
 	@callable()
@@ -43,10 +45,10 @@ export class KudosAgent extends Agent<Env, KudosState> {
 		const latest = this.state.latest;
 		// Prepend
 		latest.unshift(kudo);
-		// Limit to the last 10
+		// Limit to the last 30
 		this.setState({
 			...this.state,
-			latest: latest.slice(0, 10)
+			latest: latest.slice(0, 30)
 		});
 	}
 
@@ -102,7 +104,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
 		await this.env.YOUTUBE_GATHERER.create({
 			params: {
 				youtubeVideoId: videoId,
-				since: new Date("2020-01-01"),
+				since: "2020-01-01",
 				agentName: this.name
 			}
 		})
@@ -110,6 +112,19 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			...this.state,
 			youtubeVideoWatchCount: rows[0].watchCount as number
 		})
+	}
+
+	async checkForYouTubeComments() {
+		const rows = this.sql`SELECT * FROM youtube_videos`;
+		for (const row of rows) {
+			await this.env.YOUTUBE_GATHERER.create({
+				params: {
+					youtubeVideoId: row.id,
+					since: row.last_checked_date,
+					agentName: this.name
+				}
+			})
+		}
 	}
 
 	async trackYouTubeChecked(youtubeVideoId: string) {
