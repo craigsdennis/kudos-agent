@@ -116,7 +116,7 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 				if (isCompliment) {
 					// Add the Kudo to the agent
 					const kudo = await step.do(`Add the compliment "${compliment}"`, async () => {
-						const kudoText = `${} said ${topLevelComment.snippet.textDisplay}, so basically "${compliment}"`;
+						const kudoText = `${compliment}\n\n\n (originally "${topLevelComment.snippet.textDisplay}")`;
 						return await agent.addKudo(kudoText, topLevelComment.snippet.authorDisplayName, `https://youtu.be/${event.payload.youtubeVideoId}`, ytTitle || "YouTube Vid");
 					});
 				}

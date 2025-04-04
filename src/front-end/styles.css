@@ -9,6 +9,7 @@
   .sticky-note {
     @apply bg-sticky-yellow p-4 rounded-sm shadow-sticky transform rotate-1 mb-4;
     @apply transition-all hover:rotate-0 hover:-translate-y-1;
+    @apply flex flex-col min-h-[200px];
   }
 
   .sticky-note-blue {
