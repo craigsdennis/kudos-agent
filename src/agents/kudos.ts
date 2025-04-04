@@ -33,8 +33,16 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			id STRING PRIMARY KEY,
 			last_checked_date TIMESTAMP,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
-		// Hourly check for YouTube comments
-		this.schedule("0 * * * *", "checkForYouTubeComments");
+	}
+
+	onStart() {
+		const tasks = this.getSchedules();
+		const task = tasks.find((t) => t.callback === "checkForYouTubeComments");
+		if (!task) {
+			console.log("Scheduling YouTube checks");
+			// Hourly check for YouTube comments
+			this.schedule("0 * * * *", "checkForYouTubeComments");
+		}
 	}
 
 	@callable()
