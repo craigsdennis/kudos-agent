@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { getAgentByName } from 'agents';
 import { WorkflowEntrypoint, type WorkflowStep, type WorkflowEvent } from 'cloudflare:workers';
+import type { Kudo } from '../agents/kudos';
 
 type Params = {
 	youtubeVideoId: string;
@@ -117,7 +118,13 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 					// Add the Kudo to the agent
 					const kudo = await step.do(`Add the compliment "${compliment}"`, async () => {
 						const kudoText = `${compliment}\n\n\n (originally "${topLevelComment.snippet.textDisplay}")`;
-						return await agent.addKudo(kudoText, topLevelComment.snippet.authorDisplayName, `https://youtu.be/${event.payload.youtubeVideoId}`, ytTitle || "YouTube Vid");
+						const kudo: Kudo = {
+							text: kudoText,
+							author: topLevelComment.snippet.authorDisplayName,
+							url: `https://youtu.be/${event.payload.youtubeVideoId}`,
+							urlTitle: ytTitle || "YouTube Vid",
+						}
+						return await agent.addKudo(kudo);
 					});
 				}
 			}

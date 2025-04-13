@@ -9,7 +9,7 @@ export default function User({username}: {username: string}) {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [youtubeVideoCount, setYoutubeVideoCount] = useState(0);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
-	
+
 	const agent = useAgent({
 		agent: "kudos-agent",
 		name: username,
@@ -18,27 +18,34 @@ export default function User({username}: {username: string}) {
 			setYoutubeVideoCount(state.youtubeVideoWatchCount);
 		}
 	});
-	
+
 	const addKudo = async (form: FormData) => {
-		const text = form.get("kudo");
+		const text = form.get("kudo") as string;
 		// Store in cookie?
-		const author = form.get("author");
-		const url = form.get("url") || "";
-		const urlTitle = form.get("urlTitle") || "";
-		await agent.call("addKudo", [text, author, url, urlTitle]);
+		const author = form.get("author") as string;
+		const url = form.get("url") as string || undefined;
+		const urlTitle = form.get("urlTitle") as string || undefined;
+		const kudo: Kudo = {
+			hearted: 0,
+			text,
+			author,
+			url,
+			urlTitle,
+		}
+		await agent.call("addKudo", [kudo]);
 	}
-	
+
 	const addYoutubeVideo = async (form: FormData) => {
 		const youtubeUrl = form.get("youtubeUrl");
 		if (youtubeUrl) {
 			await agent.call("addYouTubeVideo", [youtubeUrl]);
 		}
 	}
-	
+
 	const heartKudo = async (id: number) => {
 		await agent.call("heartKudo", [id]);
 	}
-	
+
 	const playCompliment = async () => {
 		try {
 			setIsPlaying(true);
@@ -46,11 +53,11 @@ export default function User({username}: {username: string}) {
 			if (audioData) {
 				const audio = new Audio(`data:audio/mp3;base64,${audioData}`);
 				audioRef.current = audio;
-				
+
 				audio.onended = () => {
 					setIsPlaying(false);
 				};
-				
+
 				await audio.play();
 			}
 		} catch (error) {
@@ -58,7 +65,7 @@ export default function User({username}: {username: string}) {
 			setIsPlaying(false);
 		}
 	}
-	
+
 	return (
 		<div className="whiteboard p-6 min-h-screen">
 			<div className="max-w-4xl mx-auto">
@@ -81,16 +88,16 @@ export default function User({username}: {username: string}) {
 						<a href="/" className="marker-button">Back to Home</a>
 					</div>
 				</div>
-				
+
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
 					{kudos.map((kudo, index) => (
 						<div key={index} className="sticky-note">
 							<div className="flex-grow">
 								<p className="text-lg font-medium mb-2">{kudo.text}</p>
 								{kudo.url && kudo.urlTitle && (
-									<a 
-										href={kudo.url} 
-										target="_blank" 
+									<a
+										href={kudo.url}
+										target="_blank"
 										rel="noopener noreferrer"
 										className="block mb-2 text-blue-500 hover:underline"
 									>
@@ -100,7 +107,7 @@ export default function User({username}: {username: string}) {
 							</div>
 							<div className="flex justify-between items-center mt-auto">
 								<p className="text-sm text-gray-600">From: {kudo.author}</p>
-								<button 
+								<button
 									onClick={() => heartKudo(kudo.id)}
 									className="flex items-center text-sm text-gray-600 hover:text-red-500"
 								>
@@ -110,7 +117,7 @@ export default function User({username}: {username: string}) {
 						</div>
 					))}
 				</div>
-				
+
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 					<div className="bg-white p-6 rounded-lg shadow-md">
 						<h2 className="text-2xl font-bold mb-4">Add a Kudo</h2>
@@ -119,8 +126,8 @@ export default function User({username}: {username: string}) {
 								<label className="block font-medium">
 									Your message
 								</label>
-								<textarea 
-									name="kudo" 
+								<textarea
+									name="kudo"
 									className="whiteboard-input min-h-32"
 									required
 									placeholder="Write your kudos here..."
@@ -130,34 +137,34 @@ export default function User({username}: {username: string}) {
 								<label className="block font-medium">
 									Your name
 								</label>
-								<input 
-									type="text" 
-									name="author" 
+								<input
+									type="text"
+									name="author"
 									className="whiteboard-input"
 									required
-									placeholder="Your name" 
+									placeholder="Your name"
 								/>
 							</div>
 							<div className="space-y-2">
 								<label className="block font-medium">
 									Link URL (optional)
 								</label>
-								<input 
-									type="url" 
-									name="url" 
+								<input
+									type="url"
+									name="url"
 									className="whiteboard-input"
-									placeholder="https://example.com" 
+									placeholder="https://example.com"
 								/>
 							</div>
 							<div className="space-y-2">
 								<label className="block font-medium">
 									Link Title (optional)
 								</label>
-								<input 
-									type="text" 
-									name="urlTitle" 
+								<input
+									type="text"
+									name="urlTitle"
 									className="whiteboard-input"
-									placeholder="Visit this site" 
+									placeholder="Visit this site"
 								/>
 							</div>
 							<button type="submit" className="marker-button w-full">
@@ -165,7 +172,7 @@ export default function User({username}: {username: string}) {
 							</button>
 						</form>
 					</div>
-					
+
 					<div className="bg-white p-6 rounded-lg shadow-md">
 						<h2 className="text-2xl font-bold mb-4">Add YouTube Video</h2>
 						<p className="mb-4 text-gray-600">Add a YouTube video to monitor for compliments in the comments</p>
@@ -174,12 +181,12 @@ export default function User({username}: {username: string}) {
 								<label className="block font-medium">
 									YouTube Video URL
 								</label>
-								<input 
-									type="url" 
-									name="youtubeUrl" 
+								<input
+									type="url"
+									name="youtubeUrl"
 									className="whiteboard-input"
 									required
-									placeholder="https://www.youtube.com/watch?v=..." 
+									placeholder="https://www.youtube.com/watch?v=..."
 								/>
 							</div>
 							<button type="submit" className="marker-button w-full">

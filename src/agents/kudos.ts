@@ -1,7 +1,7 @@
 import {Agent, unstable_callable as callable} from "agents";
 
 export type Kudo = {
-	id: number,
+	id?: number,
 	text: string,
 	author: string,
 	hearted: number,
@@ -46,10 +46,9 @@ export class KudosAgent extends Agent<Env, KudosState> {
 	}
 
 	@callable()
-	async addKudo(text: string, author: string, url: string, urlTitle: string) {
-		const rows = this.sql`INSERT INTO kudos (text, author, url, url_title) VALUES (${text}, ${author}, ${url}, ${urlTitle}) RETURNING id;`
-		const id = rows[0].id as number;
-		const kudo: Kudo = {id, text, author, url, urlTitle, hearted: 0};
+	async addKudo(kudo: Kudo) {
+		const rows = this.sql`INSERT INTO kudos (text, author, url, url_title) VALUES (${kudo.text}, ${kudo.author}, ${kudo.url || null}, ${kudo.urlTitle || null}) RETURNING id;`
+		kudo.id = rows[0].id as number;
 		const latest = this.state.latest;
 		// Prepend
 		latest.unshift(kudo);

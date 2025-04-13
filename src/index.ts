@@ -11,8 +11,5 @@ app.notFound((c) => {
 	// We have a single page app
 	return c.env.ASSETS.fetch(c.req.raw);
 });
-app.get('/hello', async (c) => {
-	return c.json({ hello: 'world' });
-});
 
 export default app;
