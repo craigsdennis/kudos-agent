@@ -50,13 +50,14 @@ export class KudosAgent extends Agent<Env, KudosState> {
 		const rows = this.sql`INSERT INTO kudos (text, author, url, url_title) VALUES (${kudo.text}, ${kudo.author}, ${kudo.url || null}, ${kudo.urlTitle || null}) RETURNING id;`
 		kudo.id = rows[0].id as number;
 		const latest = this.state.latest;
-		// Prepend
+		// Prepend it so it's first
 		latest.unshift(kudo);
 		// Limit to the last 30
 		this.setState({
 			...this.state,
 			latest: latest.slice(0, 30)
 		});
+		return kudo;
 	}
 
 	@callable()
