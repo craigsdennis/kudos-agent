@@ -19,8 +19,8 @@ export class KudosAgent extends Agent<Env, KudosState> {
 		latest: [],
 		youtubeVideoWatchCount: 0
 	}
-	constructor(ctx: DurableObjectState, env: Env) {
-		super(ctx, env);
+
+	onStart() {
 		this.sql`CREATE TABLE IF NOT EXISTS kudos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             text TEXT NOT NULL,
@@ -33,9 +33,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			id STRING PRIMARY KEY,
 			last_checked_date TIMESTAMP,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
-	}
 
-	onStart() {
 		const tasks = this.getSchedules();
 		const task = tasks.find((t) => t.callback === "checkForYouTubeComments");
 		if (!task) {
