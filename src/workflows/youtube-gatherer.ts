@@ -119,6 +119,7 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 					const kudo = await step.do(`Add the compliment "${compliment}"`, async () => {
 						const kudoText = `${compliment}\n\n\n (originally "${topLevelComment.snippet.textDisplay}")`;
 						const kudo: Kudo = {
+							hearted: 0,
 							text: kudoText,
 							author: topLevelComment.snippet.authorDisplayName,
 							url: `https://youtu.be/${event.payload.youtubeVideoId}`,
