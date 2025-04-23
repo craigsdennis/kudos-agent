@@ -31,4 +31,16 @@
   .marker-button {
     @apply bg-black text-white font-bold py-2 px-4 rounded-md hover:bg-gray-800;
   }
+  
+  .screenshot-modal {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black/75;
+  }
+  
+  .screenshot-modal-content {
+    @apply relative max-w-4xl max-h-[90vh] overflow-auto;
+  }
+  
+  .screenshot-modal-close {
+    @apply absolute top-4 right-4 text-white bg-black/50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-black/70;
+  }
 }

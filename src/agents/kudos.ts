@@ -187,7 +187,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
 		// Save to R2
 		const uploadedScreenshotResponse = await fetch(dataUrl);
 		const transformed = await this.env.IMAGES.input(uploadedScreenshotResponse.body as ReadableStream)
-			.transform({ width: 400 })
+			.transform({ width: 600 })
 			.output({ format: 'image/png' });
 		const screenshotFileName = `${crypto.randomUUID()}.png`;
 		await this.env.SCREENSHOTS.put(screenshotFileName, transformed.image());

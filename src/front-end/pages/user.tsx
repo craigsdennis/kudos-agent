@@ -1,6 +1,6 @@
 import { useAgent } from "agents/react";
 import type { Kudo, KudosState, ScreenshotParseVerification } from "../../agents/kudos";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 const STICKY_COLORS = ['sticky-note', 'sticky-note-blue', 'sticky-note-green', 'sticky-note-pink'];
 
@@ -10,6 +10,7 @@ export default function User({username}: {username: string}) {
 	const [youtubeVideoCount, setYoutubeVideoCount] = useState(0);
 	const [verifications, setVerifications] = useState<ScreenshotParseVerification[]>([]);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const [modalImage, setModalImage] = useState<string | null>(null);
 
 	const agent = useAgent({
 		agent: "kudos-agent",
@@ -157,6 +158,25 @@ export default function User({username}: {username: string}) {
 		}
 	};
 
+	const handleOpenScreenshot = (url: string) => {
+		if (url.startsWith('/screenshots/')) {
+			setModalImage(url);
+		}
+	};
+	
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === 'Escape' && modalImage) {
+				setModalImage(null);
+			}
+		};
+		
+		window.addEventListener('keydown', handleKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [modalImage]);
+
 	return (
 		<div className="whiteboard p-6 min-h-screen">
 			<div className="max-w-4xl mx-auto">
@@ -188,9 +208,15 @@ export default function User({username}: {username: string}) {
 								{kudo.url && kudo.urlTitle && (
 									<a
 										href={kudo.url}
-										target="_blank"
+										target={kudo.url.startsWith('/screenshots/') ? "_self" : "_blank"}
 										rel="noopener noreferrer"
 										className="block mb-2 text-blue-500 hover:underline"
+										onClick={(e) => {
+											if (kudo.url && kudo.url.startsWith('/screenshots/')) {
+												e.preventDefault();
+												handleOpenScreenshot(kudo.url);
+											}
+										}}
 									>
 										{kudo.urlTitle}
 									</a>
@@ -387,6 +413,25 @@ export default function User({username}: {username: string}) {
 									</button>
 								</div>
 							))}
+						</div>
+					</div>
+				)}
+
+				{/* Screenshot Modal */}
+				{modalImage && (
+					<div className="screenshot-modal">
+						<div className="screenshot-modal-content">
+							<button 
+								onClick={() => setModalImage(null)}
+								className="screenshot-modal-close"
+							>
+								✕
+							</button>
+							<img 
+								src={modalImage} 
+								alt="Screenshot" 
+								className="max-w-full max-h-[90vh]" 
+							/>
 						</div>
 					</div>
 				)}

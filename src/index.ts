@@ -8,10 +8,6 @@ export { KudosAgent, YouTubeGatherer, ScreenshotParser };
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.get("/hello", async(c) => {
-	return c.json({hi: "mom"});
-})
-
 app.get('/screenshots/:key', async (c) => {
 	const key = c.req.param('key');
 	console.log({ key });
@@ -23,9 +19,5 @@ app.get('/screenshots/:key', async (c) => {
 });
 
 app.use('*', agentsMiddleware());
-app.notFound((c) => {
-	// We have a single page app
-	return c.env.ASSETS.fetch(c.req.raw);
-});
 
 export default app;
