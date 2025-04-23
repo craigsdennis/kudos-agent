@@ -80,7 +80,7 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 			// Newer replies can make these show up again
 			if (topLevelComment.snippet.publishedAt >= event.payload.since) {
 				const { isCompliment, compliment } = await step.do(`Determining if ${topLevelComment.id} is a compliment`, async () => {
-					const { response } = await this.env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
+					const { response } = await this.env.AI.run('@cf/meta/llama-4-scout-17b-16e-instruct', {
 						messages: [
 							{
 								role: 'system',
@@ -111,8 +111,8 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 						},
 					});
 					console.log({ comment: topLevelComment.snippet.textDisplay, response });
-					// Seems like it is parsed
-					return response;
+					// Currently not parsed (Llama 4 🐛)
+					return JSON.parse(response);
 				});
 				if (isCompliment) {
 					// Add the Kudo to the agent
@@ -132,6 +132,6 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 		}
 		await step.do(`Update last checked date`, async() => {
 			await agent.trackYouTubeChecked(event.payload.youtubeVideoId);
-		})
+		});
 	}
 }

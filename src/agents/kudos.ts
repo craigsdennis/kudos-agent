@@ -1,4 +1,5 @@
 import {Agent, unstable_callable as callable} from "agents";
+import type { L } from "vitest/dist/chunks/reporters.d.CqBhtcTq.js";
 
 export type Kudo = {
 	id?: number,
@@ -10,14 +11,23 @@ export type Kudo = {
 }
 
 export type KudosState = {
-	latest: Kudo[],
+	latest: Kudo[];
 	youtubeVideoWatchCount: number;
+	verifications?: ScreenshotParseVerification[];
+}
+
+export type ScreenshotParseVerification = {
+	workflowId: string;
+	compliment: string;
+	complimenter: string;
+	screenshotDataUrl: string;
 }
 
 export class KudosAgent extends Agent<Env, KudosState> {
 	initialState:KudosState = {
 		latest: [],
-		youtubeVideoWatchCount: 0
+		youtubeVideoWatchCount: 0,
+		verifications: []
 	}
 
 	onStart() {
@@ -84,7 +94,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
 			The compliment will be delivered to the person who received the kudos, so you should use statements like "You are...".
 			Keep it succinct, yet poignant.
 			Return only the compliment, no prefix or description.`;
-		const { response } = await this.env.AI.run("@cf/meta/llama-3.3-70b-instruct-fp8-fast", {
+		const { response } = await this.env.AI.run("@cf/meta/llama-4-scout-17b-16e-instruct", {
 			messages: [
 				{role: "system", content: instructions},
 				{role: "user", content: "-" + kudoTexts.join("\n\n\n\n-")}
@@ -149,6 +159,52 @@ export class KudosAgent extends Agent<Env, KudosState> {
 		const compliment = await this.generateCompliment();
 		console.log({compliment});
 		return this.getSpeech(compliment);
+	}
+
+	@callable()
+	async approve(workflowId: string) {
+		const workflow = await this.env.SCREENSHOT_PARSER.get(workflowId);
+		console.log(workflow);
+		await workflow.sendEvent({type: "screenshot-parse-approval", payload: {approved: true}});
+
+		// Remove verification from the state
+		if (this.state.verifications) {
+			const verifications = this.state.verifications.filter(v => v.workflowId !== workflowId);
+			this.setState({
+				...this.state,
+				verifications
+			});
+		}
+
+		return {success: true};
+	}
+
+
+	@callable()
+	async addScreenshot(dataUrl: string) {
+		// Save to R2
+		const uploadedScreenshotResponse = await fetch(dataUrl);
+		const transformed = await this.env.IMAGES.input(uploadedScreenshotResponse.body as ReadableStream)
+			.transform({width: 400})
+			.output({format: "image/png"});
+		const screenshotFileName = `${crypto.randomUUID()}.png`;
+		await this.env.SCREENSHOTS.put(screenshotFileName, transformed.image());
+		const instance = await this.env.SCREENSHOT_PARSER.create({
+			params: {
+				screenshotFileName,
+				agentName: this.name
+			}
+		});
+		return {success: true};
+	}
+
+	async addScreenshotParseVerification(verification: ScreenshotParseVerification) {
+		const verifications = this.state.verifications || [];
+		verifications.push(verification);
+		this.setState({
+			...this.state,
+			verifications
+		})
 	}
 }
 
