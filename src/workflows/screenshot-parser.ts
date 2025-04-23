@@ -76,22 +76,32 @@ export class ScreenshotParser extends WorkflowEntrypoint<Env, Params> {
 			})
 			return true;
 		});
-		const humanResponseEvent = await step.waitForEvent<ScreenshotParse>('approve screenshot parse', {
-			type: 'screenshot-parse-approval',
-			timeout: '1 day',
-		});
-		if (humanResponseEvent.payload.approved) {
-			const submitted = await step.do("Create new Kudo", async() => {
-				const kudo = await agent.addKudo({
-					text: complimentInfo.compliment,
-					author: complimentInfo.complimenter,
-					hearted: 0,
-					url: `/screenshots/${event.payload.screenshotFileName}`,
-					urlTitle: "Screenshot"
-				})
-				return true;
+		try {
+			const humanResponseEvent = await step.waitForEvent<ScreenshotParse>('approve screenshot parse', {
+				type: 'screenshot-parse-approval',
+				timeout: '1 minute',
 			});
+			console.log({humanResponseEvent});
+
+
+			if (humanResponseEvent.payload.approved) {
+				const submitted = await step.do("Create new Kudo", async() => {
+					const kudo = await agent.addKudo({
+						text: complimentInfo.compliment,
+						author: complimentInfo.complimenter,
+						hearted: 0,
+						url: `/screenshots/${event.payload.screenshotFileName}`,
+						urlTitle: "Screenshot"
+					})
+					return true;
+				});
+			}
+		} catch(err) {
+			console.log({err});
+			console.log("Threw an error on waiting");
+			console.error(err);
 		}
+
 		return JSON.stringify({success: true});
 	}
 }
