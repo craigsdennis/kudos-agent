@@ -8,6 +8,10 @@ export { KudosAgent, YouTubeGatherer, ScreenshotParser };
 
 const app = new Hono<{ Bindings: Env }>();
 
+app.get("/hello", async(c) => {
+	return c.json({hi: "mom"});
+})
+
 app.get('/screenshots/:key', async (c) => {
 	const key = c.req.param('key');
 	console.log({ key });

@@ -79,7 +79,7 @@ export class ScreenshotParser extends WorkflowEntrypoint<Env, Params> {
 		try {
 			const humanResponseEvent = await step.waitForEvent<ScreenshotParse>('approve screenshot parse', {
 				type: 'screenshot-parse-approval',
-				timeout: '1 minute',
+				timeout: '1 day',
 			});
 			if (humanResponseEvent.payload.approved) {
 				const submitted = await step.do("Create new Kudo", async() => {
