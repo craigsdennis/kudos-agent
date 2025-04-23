@@ -81,9 +81,6 @@ export class ScreenshotParser extends WorkflowEntrypoint<Env, Params> {
 				type: 'screenshot-parse-approval',
 				timeout: '1 minute',
 			});
-			console.log({humanResponseEvent});
-
-
 			if (humanResponseEvent.payload.approved) {
 				const submitted = await step.do("Create new Kudo", async() => {
 					const kudo = await agent.addKudo({
@@ -97,9 +94,9 @@ export class ScreenshotParser extends WorkflowEntrypoint<Env, Params> {
 				});
 			}
 		} catch(err) {
-			console.log({err});
-			console.log("Threw an error on waiting");
-			console.error(err);
+			console.warn("Timeout occurred");
+		} finally {
+			await agent.removeVerification(event.instanceId);
 		}
 
 		return JSON.stringify({success: true});

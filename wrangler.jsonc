@@ -13,7 +13,7 @@
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./public",
-		"not_found_handling": "none"
+		"not_found_handling": "single-page-application"
 	},
 	"observability": {
 		"enabled": true
