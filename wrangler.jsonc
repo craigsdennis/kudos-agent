@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "kudos-agent",
 	"main": "src/index.ts",
-	"compatibility_date": "2025-03-27",
+	"compatibility_date": "2025-04-23",
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
@@ -28,7 +28,18 @@
 	"migrations": [{"tag": "v1", "new_sqlite_classes": [
 		"KudosAgent"
 	]}],
-	"workflows": [{"binding": "YOUTUBE_GATHERER", "class_name": "YouTubeGatherer", "name": "YouTubeGatherer"}]
+	"workflows": [
+		{"binding": "YOUTUBE_GATHERER", "class_name": "YouTubeGatherer", "name": "YouTubeGatherer"},
+		{"binding": "SCREENSHOT_PARSER", "class_name": "ScreenshotParser", "name": "ScreenshotParser"},
+	],
+	"r2_buckets": [
+		{
+		"bucket_name": "screenshots",
+		"binding": "SCREENSHOTS",
+		}
+	],
+	"images": {"binding": "IMAGES"}
+
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
