@@ -89,7 +89,7 @@ export default function User({username}: {username: string}) {
 	const handleDrop = useCallback((e: React.DragEvent) => {
 		e.preventDefault();
 		setIsDragging(false);
-		
+
 		if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 			const file = e.dataTransfer.files[0];
 			handleFile(file);
@@ -127,7 +127,7 @@ export default function User({username}: {username: string}) {
 
 	const submitScreenshot = async () => {
 		if (!previewImage) return;
-		
+
 		try {
 			setIsUploading(true);
 			await agent.call("addScreenshot", [previewImage]);
@@ -135,7 +135,7 @@ export default function User({username}: {username: string}) {
 			if (fileInputRef.current) {
 				fileInputRef.current.value = '';
 			}
-			
+
 			// Show success message and clear it after 3 seconds
 			setUploadSuccess(true);
 			setTimeout(() => {
@@ -148,13 +148,13 @@ export default function User({username}: {username: string}) {
 			setIsUploading(false);
 		}
 	};
-	
-	const approveRequest = async (workflowId: string) => {
+
+	const handleVerification = async (workflowId: string, isApproved: boolean) => {
 		try {
-			await agent.call("approve", [workflowId]);
+			await agent.call("handleVerification", [workflowId, isApproved]);
 			// The agent state will be updated, which will trigger a UI refresh
 		} catch (error) {
-			console.error('Error approving request:', error);
+			console.error('Error handling verification request:', error);
 		}
 	};
 
@@ -163,14 +163,14 @@ export default function User({username}: {username: string}) {
 			setModalImage(url);
 		}
 	};
-	
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape' && modalImage) {
 				setModalImage(null);
 			}
 		};
-		
+
 		window.addEventListener('keydown', handleKeyDown);
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
@@ -315,7 +315,7 @@ export default function User({username}: {username: string}) {
 					<div className="bg-white p-6 rounded-lg shadow-md">
 						<h2 className="text-2xl font-bold mb-4">Upload Screenshot</h2>
 						<p className="mb-4 text-gray-600">Drag and drop a screenshot or use the file picker</p>
-						
+
 						{uploadSuccess ? (
 							<div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 relative flex items-center justify-between">
 								<div>
@@ -326,7 +326,7 @@ export default function User({username}: {username: string}) {
 								</svg>
 							</div>
 						) : (
-							<div 
+							<div
 								className={`border-2 border-dashed p-4 rounded-md mb-4 transition-colors ${
 									isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
 								}`}
@@ -337,15 +337,15 @@ export default function User({username}: {username: string}) {
 								{!previewImage ? (
 									<div className="text-center py-8">
 										<p className="text-gray-500 mb-4">Drag and drop an image here or click to select</p>
-										<input 
-											type="file" 
+										<input
+											type="file"
 											ref={fileInputRef}
-											accept="image/*" 
-											className="hidden" 
-											onChange={handleFileSelect} 
+											accept="image/*"
+											className="hidden"
+											onChange={handleFileSelect}
 										/>
-										<button 
-											type="button" 
+										<button
+											type="button"
 											onClick={() => fileInputRef.current?.click()}
 											className="marker-button"
 										>
@@ -354,21 +354,21 @@ export default function User({username}: {username: string}) {
 									</div>
 								) : (
 									<div className="text-center">
-										<img 
-											src={previewImage} 
-											alt="Preview" 
-											className="max-h-48 mx-auto mb-4 rounded-md" 
+										<img
+											src={previewImage}
+											alt="Preview"
+											className="max-h-48 mx-auto mb-4 rounded-md"
 										/>
 										<div className="flex justify-center gap-4">
-											<button 
-												type="button" 
+											<button
+												type="button"
 												onClick={clearPreview}
 												className="marker-button bg-gray-500"
 											>
 												Cancel
 											</button>
-											<button 
-												type="button" 
+											<button
+												type="button"
 												onClick={submitScreenshot}
 												className="marker-button"
 												disabled={isUploading}
@@ -380,13 +380,13 @@ export default function User({username}: {username: string}) {
 								)}
 							</div>
 						)}
-						
+
 						<p className="text-sm text-gray-500 mt-2">
 							After uploading, screenshots will be processed and appear in the admin section for approval.
 						</p>
 					</div>
 				</div>
-				
+
 				{verifications && verifications.length > 0 && (
 					<div className="bg-white p-6 rounded-lg shadow-md mb-8">
 						<h2 className="text-2xl font-bold mb-4">Admin: Approval Requests ({verifications.length})</h2>
@@ -394,23 +394,32 @@ export default function User({username}: {username: string}) {
 							{verifications.map((verification) => (
 								<div key={verification.workflowId} className="border p-4 rounded-md flex items-start gap-4">
 									{verification.screenshotDataUrl && (
-										<img 
-											src={verification.screenshotDataUrl} 
-											alt="Screenshot" 
-											className="w-24 h-24 object-cover rounded-md" 
+										<img
+											src={verification.screenshotDataUrl}
+											alt="Screenshot"
+											className="w-24 h-24 object-cover rounded-md"
 										/>
 									)}
 									<div className="flex-1">
 										<p className="font-medium">{verification.compliment}</p>
 										<p className="text-sm text-gray-600">From: {verification.complimenter}</p>
 									</div>
-									<button 
-										onClick={() => approveRequest(verification.workflowId)}
-										className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors"
-										title="Approve"
-									>
-										✓
-									</button>
+									<div className="flex gap-2">
+										<button
+											onClick={() => handleVerification(verification.workflowId, true)}
+											className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600 transition-colors"
+											title="Approve"
+										>
+											✓
+										</button>
+										<button
+											onClick={() => handleVerification(verification.workflowId, false)}
+											className="bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+											title="Reject"
+										>
+											✕
+										</button>
+									</div>
 								</div>
 							))}
 						</div>
@@ -421,16 +430,16 @@ export default function User({username}: {username: string}) {
 				{modalImage && (
 					<div className="screenshot-modal">
 						<div className="screenshot-modal-content">
-							<button 
+							<button
 								onClick={() => setModalImage(null)}
 								className="screenshot-modal-close"
 							>
 								✕
 							</button>
-							<img 
-								src={modalImage} 
-								alt="Screenshot" 
-								className="max-w-full max-h-[90vh]" 
+							<img
+								src={modalImage}
+								alt="Screenshot"
+								className="max-w-full max-h-[90vh]"
 							/>
 						</div>
 					</div>

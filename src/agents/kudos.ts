@@ -175,10 +175,10 @@ export class KudosAgent extends Agent<Env, KudosState> {
 	}
 
 	@callable()
-	async approve(workflowId: string) {
+	async handleVerification(workflowId: string, isApproved: boolean) {
 		const workflow = await this.env.SCREENSHOT_PARSER.get(workflowId);
 		console.log(workflow);
-		await workflow.sendEvent({ type: 'screenshot-parse-approval', payload: { approved: true } });
+		await workflow.sendEvent({ type: 'screenshot-parse-approval', payload: { approved: isApproved } });
 		return { success: true };
 	}
 
