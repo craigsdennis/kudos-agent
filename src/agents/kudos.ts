@@ -6,6 +6,7 @@ export type Kudo = {
 	text: string;
 	author: string;
 	hearted: number;
+	originalText?: string;
 	url?: string;
 	urlTitle?: string;
 };
@@ -35,6 +36,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             text TEXT NOT NULL,
             author TEXT,
+			original_text TEXT,
 			url TEXT,
 			url_title TEXT,
 			hearted INTEGER DEFAULT 0,
@@ -55,7 +57,7 @@ export class KudosAgent extends Agent<Env, KudosState> {
 
 	@callable()
 	async addKudo(kudo: Kudo) {
-		const rows = this.sql`INSERT INTO kudos (text, author, url, url_title) VALUES (${kudo.text}, ${kudo.author}, ${kudo.url || null}, ${
+		const rows = this.sql`INSERT INTO kudos (text, author, original_text, url, url_title) VALUES (${kudo.text}, ${kudo.author}, ${kudo.originalText || null}, ${kudo.url || null}, ${
 			kudo.urlTitle || null
 		}) RETURNING id;`;
 		kudo.id = rows[0].id as number;

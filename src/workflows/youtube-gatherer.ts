@@ -86,7 +86,7 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 								role: 'system',
 								content: `You are a YouTube compliment filter.
 								The user is going to pass you a comment from a YouTube Video.
-								Your job is to determine if it is a compliment to the creator of the video or not.
+								Your job is to determine if it is a compliment to the creator of the video, ${agent.name} or not.
 								`,
 							},
 							{ role: 'user', content: topLevelComment.snippet.textDisplay },
@@ -103,10 +103,10 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 									compliment: {
 										type: 'string',
 										description:
-											"A compliment based on the comment but rewritten and directed at the creator of the video. 'Not Applicable' if it isn't a compliment.",
+											`A compliment based on the comment provided. It is rewritten and directed towards the creator of the video, ${agent.name} who goes byin English. Returns 'Not Applicable' if it isn't a compliment.`,
 									},
 								},
-								required: ['isCompliment'],
+								required: ['isCompliment', 'compliment'],
 							},
 						},
 					});
@@ -117,11 +117,11 @@ export class YouTubeGatherer extends WorkflowEntrypoint<Env, Params> {
 				if (isCompliment) {
 					// Add the Kudo to the agent
 					const kudo = await step.do(`Add the compliment "${compliment}"`, async () => {
-						const kudoText = `${compliment}\n\n\n (originally "${topLevelComment.snippet.textDisplay}")`;
 						const kudo: Kudo = {
 							hearted: 0,
-							text: kudoText,
+							text: compliment,
 							author: topLevelComment.snippet.authorDisplayName,
+							originalText: topLevelComment.snippet.textDisplay,
 							url: `https://youtu.be/${event.payload.youtubeVideoId}`,
 							urlTitle: ytTitle || "YouTube Vid",
 						}

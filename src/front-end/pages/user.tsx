@@ -223,7 +223,18 @@ export default function User({username}: {username: string}) {
 								)}
 							</div>
 							<div className="flex justify-between items-center mt-auto">
-								<p className="text-sm text-gray-600">From: {kudo.author}</p>
+								<div className="flex items-center">
+									<p className="text-sm text-gray-600">From: {kudo.author}</p>
+									{kudo.originalText && (
+										<div className="relative ml-2 group">
+											<span className="cursor-help text-gray-500">📝</span>
+											<div className="absolute bottom-full mb-2 left-0 bg-white p-2 rounded shadow-md hidden group-hover:block w-60 text-xs z-10">
+												<p className="font-medium mb-1">Original text:</p>
+												<p className="text-gray-700">{kudo.originalText}</p>
+											</div>
+										</div>
+									)}
+								</div>
 								<button
 									onClick={() => heartKudo(kudo.id)}
 									className="flex items-center text-sm text-gray-600 hover:text-red-500"
