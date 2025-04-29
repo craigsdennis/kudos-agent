@@ -29,7 +29,8 @@ export class ScreenshotParser extends WorkflowEntrypoint<Env, Params> {
 				messages: [
 					{
 						role: 'system',
-						content: `You are a compliment extractor`,
+						content: `You are a compliment extractor based on images provided.
+						This is for ${agent.name}`,
 					},
 					{
 						role: 'user',
@@ -55,7 +56,7 @@ export class ScreenshotParser extends WorkflowEntrypoint<Env, Params> {
 							compliment: {
 								type: 'string',
 								description:
-									"A compliment based on the screenshot but rewritten and directed at the person mentioned. 'Not Applicable' if it isn't a compliment.",
+									`A compliment based on the screenshot but rewritten and directed at the person mentioned, ${agent.name}. 'Not Applicable' if it isn't a compliment.`,
 							},
 							complimenter: {
 								type: 'string',

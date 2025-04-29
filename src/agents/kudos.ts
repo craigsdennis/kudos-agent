@@ -1,5 +1,4 @@
 import { Agent, unstable_callable as callable } from 'agents';
-import type { L } from 'vitest/dist/chunks/reporters.d.CqBhtcTq.js';
 
 export type Kudo = {
 	id?: number;
@@ -179,7 +178,6 @@ export class KudosAgent extends Agent<Env, KudosState> {
 	@callable()
 	async handleVerification(workflowId: string, isApproved: boolean) {
 		const workflow = await this.env.SCREENSHOT_PARSER.get(workflowId);
-		console.log(workflow);
 		await workflow.sendEvent({ type: 'screenshot-parse-approval', payload: { approved: isApproved } });
 		return { success: true };
 	}
