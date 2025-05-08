@@ -1,5 +1,7 @@
 # Kudos Agent
 
+[<img src="https://img.youtube.com/vi/ULu8hjFe_S0/0.jpg">](https://youtu.be/ULu8hjFe_S0 "Build an AI Agent based Kudos Board")
+
 This is a demo application of the [Cloudflare Agents Framework](https://agents.cloudflare.com).
 
 Each User is represented by an Agent, addressable by the username. Kudos are stored both in the Agent's internal SQLite database as well as the Agent State which is synced to every connected client.

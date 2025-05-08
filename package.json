@@ -25,7 +25,7 @@
 		"@googleapis/youtube": "^24.0.0",
 		"@tailwindcss/postcss": "^4.0.17",
 		"@tailwindcss/vite": "^4.0.17",
-		"@vitejs/plugin-react": "^4.3.4",
+		"@vitejs/plugin-react": "^4.4.1",
 		"agents": "^0.0.46",
 		"autoprefixer": "^10.4.21",
 		"hono": "^4.7.5",
