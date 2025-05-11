@@ -1,5 +1,7 @@
 # Kudos Agent
 
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/craigsdennis/kudos-agent)
+
 [<img src="https://img.youtube.com/vi/ULu8hjFe_S0/0.jpg">](https://youtu.be/ULu8hjFe_S0 "Build an AI Agent based Kudos Board")
 
 This is a demo application of the [Cloudflare Agents Framework](https://agents.cloudflare.com).
@@ -15,7 +17,7 @@ There is a background Workflow that runs to check YouTube for new compliments an
 
 Copy [.dev.vars.example](./.dev.vars.example) to `.dev.vars`
 
-Add your YouTube API Key
+Add your [YouTube Data API Key](https://developers.google.com/youtube/v3/getting-started)
 
 ```bash
 npm install
